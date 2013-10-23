@@ -10,7 +10,7 @@ use canopy\request\Session;
 
 
 
-include __DIR__.strtr('/canopy/util/Autoload.php', '/', DIRECTORY_SEPARATOR);
+include __DIR__.strtr('/util/Autoload.php', '/', DIRECTORY_SEPARATOR);
 $loader = new Autoload(__DIR__);
 $loader->register('lib');
 $forest = new Forest(new site\User(), new Directory("/"));
