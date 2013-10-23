@@ -48,41 +48,45 @@ class Directory {
   public function readBinary() {
   }
 
-  public function listContents( $path = "", $filter = null, $deep = false ) {
+  public function listContents( $path = "", $filter = null, $deep = false, $separator = DIRECTORY_SEPARATOR ) {
+    $rootSrc = $this->root;
     if( $path == "" ) {
       $path = $this->root;
       $rootSrc = '/';
     }
     else if ( !Path::isAbsolute($path) ) {
-      $rootSrc = $path;
-      $path = Path::concat($this->root, Path::strip($path));
+      $rootSrc = '/'.Path::strip($path, '/');
+      $path = Path::concat($this->root, Path::strip($path, '/'));
     }
     @$contents = scandir($path);
     if ( !$contents ) return null;
 
+    $ret = array();
+
     if ( $deep ) {
       foreach ( $contents as $i => $name ) {
         if ( $name == '.' || $name == '..' ) continue;
-        $name = Path::concat($path, $name);
-        if ( is_dir($name) ) {
-          $contents[$i] = $this->listContents($name, $filter, true);
+        $fullPath = Path::concat($path, $name);
+        if ( is_dir($fullPath) ) {
+          $fullPath = substr($rootSrc.'/'.$name, 1);
+          $ret[$name] = $this->listContents($fullPath, $filter, true);
         }
         else {
-          $contents[$i] = Path::concat($rootSrc, $name);
+          $ret[] = $rootSrc.'/'.$name;
         }
       }
     }
 
-    if ( $filter == null ) return $contents;
-    else return $this->filterListContents($contents, $filter);
+    if ( $filter == null ) return $ret ;
+    else return $this->filterListContents($ret, $filter);
   }
 
   private function filterListContents( $contents, $filter ) {
     $ret = array();
-    foreach ( $contents as $name ) {
+    foreach ( $contents as $i => $name ) {
       if ( $name == '.' || $name == '..' ) continue;
       if ( is_array($name) ) {
-        $ret[] = $this->filterListContents($name, $filter);
+        $ret[$i] = $this->filterListContents($name, $filter);
       }
       else if ( call_user_func($filter, $name) ) {
         $ret[] = $name;
