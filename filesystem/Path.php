@@ -38,7 +38,7 @@ final class Path {
     $i = 0;
     $l = func_num_args();
     $args = func_get_args();
-    $path = $args[$i];
+    $path = self::strip($args[$i]);
 
     while ( ++$i < $l ) {
       $path .= DIRECTORY_SEPARATOR . self::strip($args[$i]);
